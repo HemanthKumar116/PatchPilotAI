@@ -1,0 +1,129 @@
+{
+  "overall_accuracy": 1.0,
+  "total_samples": 89660,
+  "train_samples": 71728,
+  "test_samples": 17932,
+  "tree_count": 200,
+  "algorithm": "Random Forest Classifier",
+  "per_class_metrics": {
+    "LOW": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 2359
+    },
+    "MEDIUM": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 3577
+    },
+    "HIGH": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 1566
+    },
+    "CRITICAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 10430
+    }
+  },
+  "confusion_matrix": [
+    [
+      1566,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      10430,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      3577,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      2359
+    ]
+  ],
+  "class_labels": [
+    "LOW",
+    "MEDIUM",
+    "HIGH",
+    "CRITICAL"
+  ],
+  "feature_importances": [
+    {
+      "feature": "cvss",
+      "importance": 0.197
+    },
+    {
+      "feature": "severity_HIGH",
+      "importance": 0.1573
+    },
+    {
+      "feature": "severity_MEDIUM",
+      "importance": 0.1401
+    },
+    {
+      "feature": "severity_LOW",
+      "importance": 0.1201
+    },
+    {
+      "feature": "severity_CRITICAL",
+      "importance": 0.0726
+    },
+    {
+      "feature": "impact_availability_COMPLETE",
+      "importance": 0.046
+    },
+    {
+      "feature": "impact_integrity_COMPLETE",
+      "importance": 0.0428
+    },
+    {
+      "feature": "impact_availability_NONE",
+      "importance": 0.0314
+    },
+    {
+      "feature": "impact_confidentiality_COMPLETE",
+      "importance": 0.0293
+    },
+    {
+      "feature": "access_vector_NETWORK",
+      "importance": 0.0194
+    },
+    {
+      "feature": "access_vector_LOCAL",
+      "importance": 0.0187
+    },
+    {
+      "feature": "impact_availability_PARTIAL",
+      "importance": 0.0142
+    },
+    {
+      "feature": "access_complexity_LOW",
+      "importance": 0.0135
+    },
+    {
+      "feature": "access_complexity_MEDIUM",
+      "importance": 0.0127
+    },
+    {
+      "feature": "impact_confidentiality_NONE",
+      "importance": 0.0121
+    }
+  ],
+  "disclaimer": "The current MVP model learns the derived prioritization policy. It is not a predictor of future cyberattacks or a substitute for real-world threat intelligence."
+}

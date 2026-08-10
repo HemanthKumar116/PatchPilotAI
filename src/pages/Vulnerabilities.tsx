@@ -131,18 +131,18 @@ export const Vulnerabilities: React.FC = () => {
             {/* Header title & summary */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <ShieldAlert className="w-6 h-6 text-blue-600" />
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2 drop-shadow-md font-display">
+                        <ShieldAlert className="w-7 h-7 text-white" />
                         Vulnerability Catalog
                     </h1>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-xs text-zinc-200 font-medium font-mono mt-1">
                         Search, filter, and inspect AI-evaluated risk scores for the fleet. Click any row to slide out detailed factors.
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="text-slate-500">Showing:</span>
-                    <span className="font-bold text-slate-900 bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-xs">
+                    <span className="text-zinc-300 font-bold">Showing:</span>
+                    <span className="font-bold text-black bg-white border-2 border-black px-3.5 py-1.5 rounded-full shadow-brutalist">
                         {filteredVulns.length} of {(fleetStats.totalCount || vulnerabilities.length).toLocaleString()} CVEs
                     </span>
                 </div>

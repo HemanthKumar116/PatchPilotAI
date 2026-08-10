@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ShieldAlert, ListOrdered, Radio, Brain, Info, Upload, X, Shield } from 'lucide-react';
+import { LayoutDashboard, ShieldAlert, ListOrdered, Radio, Brain, Info, Upload, X } from 'lucide-react';
 import { useVulnerability } from '../context/VulnerabilityContext';
 
 interface Props {
@@ -24,135 +24,109 @@ export const Navbar: React.FC<Props> = ({ isOpen = false, onClose }) => {
     const navItems = [
         { to: '/', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/vulnerabilities', label: 'Vulnerabilities', icon: ShieldAlert, badge: formatBadge(totalCount) },
-        { to: '/patch-queue', label: 'Patch Queue', icon: ListOrdered, badge: patchNowCount > 0 ? formatBadge(patchNowCount) : undefined, badgeColor: 'bg-red-50 text-red-700 border border-red-200' },
+        { to: '/patch-queue', label: 'Patch Queue', icon: ListOrdered, badge: patchNowCount > 0 ? formatBadge(patchNowCount) : undefined, badgeColor: 'bg-black text-white' },
         { to: '/intelligence', label: 'Threat Intelligence', icon: Radio },
-        { to: '/about', label: 'About & Metrics', icon: Info },
+        { to: '/ai-model', label: 'AI Model (RF)', icon: Brain },
+        { to: '/about', label: 'About & Formula', icon: Info },
     ];
 
-    const sidebarContent = (
-        <div className="flex flex-col h-full bg-white text-slate-800 font-sans select-none border-r border-slate-200 shadow-xs">
-            {/* Header / Logo */}
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                <NavLink to="/" className="flex items-center space-x-3 group" onClick={onClose}>
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
-                        <span className="text-xl">🛡️</span>
-                    </div>
-                    <div>
-                        <div className="flex items-center space-x-1.5">
-                            <span className="font-extrabold text-base tracking-tight text-slate-900">PatchPilot</span>
-                            <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">
-                                AI
-                            </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-medium tracking-tight mt-0.5">
-                            Enterprise Cyber Prioritizer
-                        </p>
-                    </div>
-                </NavLink>
+    if (!isOpen) return null;
 
-                {/* Close Button on Mobile Drawer */}
-                {onClose && (
+    return (
+        <div className="fixed inset-0 z-50 flex">
+            {/* Backdrop */}
+            <div
+                onClick={onClose}
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-page-enter"
+            />
+
+            {/* Mobile Drawer */}
+            <aside className="relative w-72 bg-white border-r-2 border-black shadow-2xl h-full flex flex-col font-sans z-50 animate-slide-in-right">
+                {/* Header */}
+                <div className="p-5 border-b-2 border-black flex items-center justify-between">
+                    <NavLink to="/" className="flex items-center gap-2" onClick={onClose}>
+                        <span className="font-display font-black text-xl tracking-tight text-black">
+                            PatchPilot...
+                        </span>
+                        <span className="bg-black text-white text-[10px] font-mono font-black px-2 py-0.5 rounded-full">
+                            AI
+                        </span>
+                    </NavLink>
                     <button
                         onClick={onClose}
-                        className="md:hidden p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-all"
+                        className="p-1.5 rounded-full bg-black text-white hover:bg-zinc-800 transition-all"
                     >
                         <X className="w-4 h-4" />
                     </button>
-                )}
-            </div>
-
-            {/* Navigation items list */}
-            <div className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 block mb-2 font-mono">
-                    NAVIGATION
-                </span>
-                {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            end={item.to === '/'}
-                            onClick={onClose}
-                            className={({ isActive }) =>
-                                `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold tracking-normal transition-all duration-150 relative ${isActive
-                                    ? 'bg-blue-50/80 text-blue-700 font-bold border-l-4 border-l-blue-600 shadow-xs'
-                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 border-l-4 border-l-transparent'
-                                }`
-                            }
-                        >
-                            <div className="flex items-center space-x-3">
-                                <Icon className="w-4 h-4 text-blue-600 shrink-0" />
-                                <span>{item.label}</span>
-                            </div>
-                            {item.badge !== undefined && (
-                                <span
-                                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold font-mono ${item.badgeColor || 'bg-slate-100 text-slate-600 border border-slate-200'
-                                        }`}
-                                >
-                                    {item.badge}
-                                </span>
-                            )}
-                        </NavLink>
-                    );
-                })}
-
-                {/* Data Import Direct Action */}
-                <div className="pt-4 mt-4 border-t border-slate-100">
-                    <button
-                        onClick={() => {
-                            if (onClose) onClose();
-                            setIsCsvModalOpen(true);
-                        }}
-                        className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 transition-all shadow-xs group"
-                    >
-                        <div className="flex items-center space-x-3">
-                            <Upload className="w-4 h-4 text-slate-500 group-hover:text-blue-600" />
-                            <span>Data Import</span>
-                        </div>
-                        <span className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono text-slate-500">
-                            CSV
-                        </span>
-                    </button>
                 </div>
-            </div>
 
-            {/* Status Footer */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50/60 text-[11px] text-slate-500 space-y-1">
-                <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-600">SYSTEM STATUS:</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1 font-mono">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> ONLINE
+                {/* Nav Items */}
+                <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-zinc-500 uppercase px-2 block mb-2">
+                        MENU
                     </span>
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                end={item.to === '/'}
+                                onClick={onClose}
+                                className={({ isActive }) =>
+                                    `flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-mono font-bold transition-all border-2 ${isActive
+                                        ? 'bg-black text-white border-black shadow-[4px_4px_0px_#71717A]'
+                                        : 'bg-white text-black border-black/20 hover:border-black hover:bg-zinc-50'
+                                    }`
+                                }
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Icon className="w-4 h-4" />
+                                    <span>{item.label}</span>
+                                </div>
+                                {item.badge !== undefined && (
+                                    <span
+                                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold font-mono ${item.badgeColor || 'bg-black text-white'
+                                            }`}
+                                    >
+                                        {item.badge}
+                                    </span>
+                                )}
+                            </NavLink>
+                        );
+                    })}
+
+                    <div className="pt-4 mt-4 border-t-2 border-black/10">
+                        <button
+                            onClick={() => {
+                                if (onClose) onClose();
+                                setIsCsvModalOpen(true);
+                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-mono font-black bg-black text-white border-2 border-black shadow-[4px_4px_0px_#71717A] active:scale-95 transition-all"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Upload className="w-4 h-4" />
+                                <span>Import Dataset</span>
+                            </div>
+                            <span className="text-[10px] bg-white text-black px-2 py-0.5 rounded-full">
+                                CSV
+                            </span>
+                        </button>
+                    </div>
                 </div>
-                <div className="text-[10px] font-mono text-slate-400">Random Forest v2.0 • ML Active</div>
-            </div>
+
+                {/* Footer */}
+                <div className="p-4 border-t-2 border-black bg-zinc-50 text-[11px] font-mono text-zinc-600 space-y-1">
+                    <div className="flex items-center justify-between">
+                        <span className="font-bold text-black">SYSTEM STATUS:</span>
+                        <span className="text-black font-black flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> ONLINE
+                        </span>
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Random Forest v2.0 • ML Active</div>
+                </div>
+            </aside>
         </div>
-    );
-
-    return (
-        <>
-            {/* Desktop Navigation Sidebar */}
-            <aside className="hidden md:flex md:flex-col md:w-64 md:h-screen md:sticky md:top-0 bg-white border-r border-slate-200 shrink-0 z-30">
-                {sidebarContent}
-            </aside>
-
-            {/* Mobile Navigation Drawer Backdrop */}
-            {isOpen && (
-                <div
-                    onClick={onClose}
-                    className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity duration-300 animate-page-enter"
-                />
-            )}
-
-            {/* Mobile Navigation Drawer Panel */}
-            <aside
-                className={`md:hidden fixed top-0 bottom-0 left-0 w-64 bg-white z-50 border-r border-slate-200 shadow-2xl transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
-                    }`}
-            >
-                {sidebarContent}
-            </aside>
-        </>
     );
 };
 

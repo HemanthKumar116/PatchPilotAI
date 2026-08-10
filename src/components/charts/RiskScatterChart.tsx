@@ -16,51 +16,27 @@ export const RiskScatterChart: React.FC = () => {
     const { vulnerabilities, setSelectedVulnModal } = useVulnerability();
 
     const data = vulnerabilities.map((v) => ({
-        cveId: v.cveId,
-        cvss: v.cvss,
-        riskScore: v.analysis.riskScore,
-        knownExploited: v.knownExploited,
-        priority: v.analysis.priority,
+        x: v.cvss,
+        y: v.analysis.riskScore,
+        z: v.knownExploited ? 100 : 40,
+        cve: v.cveId,
         title: v.title,
-        vuln: v,
+        priority: v.analysis.priority,
+        raw: v,
+        knownExploited: v.knownExploited,
     }));
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
-            const item = payload[0].payload;
+            const point = payload[0].payload;
             return (
-                <div className="bg-white border border-slate-200 p-3 rounded-lg shadow-lg text-xs font-mono max-w-xs z-50">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-bold text-blue-700">{item.cveId}</span>
-                        <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${item.priority === 'CRITICAL'
-                                ? 'bg-red-50 text-red-700 border border-red-200'
-                                : item.priority === 'HIGH'
-                                    ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                                    : item.priority === 'MEDIUM'
-                                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                }`}
-                        >
-                            {item.priority}
-                        </span>
-                    </div>
-                    <p className="text-slate-700 font-sans text-[11px] line-clamp-1 mb-2">{item.title}</p>
-                    <div className="space-y-1 text-[11px]">
-                        <div className="flex justify-between">
-                            <span className="text-slate-500">CVSS Score:</span>
-                            <span className="text-slate-900 font-bold">{item.cvss}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-slate-500">AI Risk Score:</span>
-                            <span className="text-blue-700 font-extrabold">{item.riskScore}/100</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-slate-500">CISA KEV Listed:</span>
-                            <span className={item.knownExploited ? 'text-red-700 font-bold' : 'text-slate-500'}>
-                                {item.knownExploited ? '🔥 YES' : 'No'}
-                            </span>
-                        </div>
+                <div className="bg-black text-white p-3 rounded-xl border-2 border-black shadow-xl text-xs font-mono">
+                    <div className="font-black text-white">{point.cve}</div>
+                    <div className="text-[11px] text-zinc-300 truncate max-w-xs">{point.title}</div>
+                    <div className="mt-1 pt-1 border-t border-zinc-700 space-y-0.5">
+                        <div>CVSS Severity: <strong className="text-white">{point.x}</strong></div>
+                        <div>AI Risk Score: <strong className="text-white">{point.y}/100</strong></div>
+                        <div>CISA KEV: <strong className="text-white">{point.knownExploited ? 'YES' : 'NO'}</strong></div>
                     </div>
                 </div>
             );
@@ -69,56 +45,56 @@ export const RiskScatterChart: React.FC = () => {
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+        <div className="card-maximalist p-6 flex flex-col justify-between">
             <div>
                 <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                    <h3 className="text-base font-extrabold font-display text-black tracking-tight">
                         CVSS Score vs. AI Risk Score
                     </h3>
-                    <span className="text-[10px] font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-bold">
-                        Proof Visualization
+                    <span className="text-[10px] font-mono bg-zinc-100 text-black border-2 border-black px-2.5 py-0.5 rounded-full font-bold">
+                        Proof Chart
                     </span>
                 </div>
-                <p className="text-xs text-slate-500 mb-4">
-                    Red points represent CISA KEV active exploitation. Notice how lower CVSS scores often score higher in AI Risk due to active threats.
+                <p className="text-xs font-mono text-zinc-500 mb-4">
+                    Demonstrating why raw CVSS severity diverges from actual exploitable business risk.
                 </p>
             </div>
 
             <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                    <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: -10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E4E4E7" />
                         <XAxis
                             type="number"
-                            dataKey="cvss"
-                            name="CVSS"
+                            dataKey="x"
+                            name="CVSS Base"
                             domain={[0, 10]}
-                            stroke="#94A3B8"
-                            fontSize={11}
-                            label={{ value: 'CVSS Score (0-10)', position: 'insideBottom', offset: -10, fill: '#64748B', fontSize: 11 }}
+                            stroke="#000000"
+                            tick={{ fill: '#000000', fontSize: 11, fontFamily: 'monospace' }}
+                            label={{ value: 'Raw CVSS Severity', position: 'insideBottom', offset: -10, fill: '#000000', fontSize: 11 }}
                         />
                         <YAxis
                             type="number"
-                            dataKey="riskScore"
+                            dataKey="y"
                             name="AI Risk Score"
                             domain={[0, 100]}
-                            stroke="#94A3B8"
-                            fontSize={11}
-                            label={{ value: 'AI Risk Score (0-100)', angle: -90, position: 'insideLeft', offset: 10, fill: '#64748B', fontSize: 11 }}
+                            stroke="#000000"
+                            tick={{ fill: '#000000', fontSize: 11, fontFamily: 'monospace' }}
+                            label={{ value: 'AI Risk Score', angle: -90, position: 'insideLeft', fill: '#000000', fontSize: 11 }}
                         />
-                        <ZAxis type="number" range={[90, 90]} />
+                        <ZAxis type="number" dataKey="z" range={[40, 100]} />
                         <Tooltip content={<CustomTooltip />} />
                         <Scatter
                             name="Vulnerabilities"
                             data={data}
-                            onClick={(e: any) => e?.vuln && setSelectedVulnModal(e.vuln)}
-                            cursor="pointer"
+                            onClick={(point: any) => setSelectedVulnModal(point.raw)}
+                            className="cursor-pointer"
                         >
                             {data.map((entry, index) => (
                                 <Cell
                                     key={`cell-${index}`}
-                                    fill={entry.knownExploited ? '#EF4444' : '#2563EB'}
-                                    stroke={entry.knownExploited ? '#DC2626' : '#1D4ED8'}
+                                    fill={entry.knownExploited ? '#000000' : '#71717A'}
+                                    stroke="#000000"
                                     strokeWidth={1.5}
                                 />
                             ))}
@@ -126,17 +102,8 @@ export const RiskScatterChart: React.FC = () => {
                     </ScatterChart>
                 </ResponsiveContainer>
             </div>
-
-            <div className="flex items-center justify-center gap-6 mt-3 pt-3 border-t border-slate-100 text-xs font-mono">
-                <span className="flex items-center gap-2 text-red-700 font-bold">
-                    <span className="w-3 h-3 rounded-full bg-red-500 border border-red-600 inline-block" />
-                    🔥 Known Exploited (CISA KEV)
-                </span>
-                <span className="flex items-center gap-2 text-slate-500 font-medium">
-                    <span className="w-3 h-3 rounded-full bg-blue-600 border border-blue-700 inline-block" />
-                    ✓ Not Listed in KEV
-                </span>
-            </div>
         </div>
     );
 };
+
+export default RiskScatterChart;

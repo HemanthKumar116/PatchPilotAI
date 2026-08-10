@@ -10,7 +10,8 @@ import { exploitPredictorModel, extractCveFeatures, ExploitPredictionResult } fr
  * 5. Exploit Availability (5%) - Explicit manual/CSV value OR AI Random Forest Likelihood Prediction
  */
 export function calculateRiskScore(vuln: Partial<Vulnerability>): RiskAnalysisResult {
-    const cvss = vuln.cvss ?? 0;
+    const rawCvss = typeof vuln.cvss === 'number' && !isNaN(vuln.cvss) ? vuln.cvss : 0;
+    const cvss = Math.min(10, Math.max(0, rawCvss));
     const knownExploited = Boolean(vuln.knownExploited);
     const internetExposed = Boolean(vuln.internetExposed);
     const assetCriticality: AssetCriticality = vuln.assetCriticality ?? 'Medium';
@@ -57,7 +58,10 @@ export function calculateRiskScore(vuln: Partial<Vulnerability>): RiskAnalysisRe
         });
 
         exploitPrediction = exploitPredictorModel.predictExploitLikelihood(features);
-        exploitSubscore = Math.round(exploitPrediction.predictedProbability * 100);
+        const prob = typeof exploitPrediction?.predictedProbability === 'number' && !isNaN(exploitPrediction.predictedProbability)
+            ? exploitPrediction.predictedProbability
+            : 0.5;
+        exploitSubscore = Math.round(prob * 100);
         isExploitPredicted = true;
     }
 
@@ -69,7 +73,7 @@ export function calculateRiskScore(vuln: Partial<Vulnerability>): RiskAnalysisRe
     const weightedExploit = exploitSubscore * 0.05;
 
     const rawScore = weightedCvss + weightedKev + weightedExposure + weightedCriticality + weightedExploit;
-    const riskScore = Math.min(100, Math.max(0, Math.round(rawScore)));
+    const riskScore = Math.min(100, Math.max(0, isNaN(rawScore) ? 50 : Math.round(rawScore)));
 
     // 3. Priority band determination
     let priority: PriorityBand = 'LOW';

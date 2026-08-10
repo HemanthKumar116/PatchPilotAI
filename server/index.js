@@ -115,7 +115,15 @@ app.get('/api/kev', async (req, res) => {
 // GET /api/nvd/cve/:cveId - NVD CVE detail proxy
 app.get('/api/nvd/cve/:cveId', async (req, res) => {
     const { cveId } = req.params;
-    const cleanId = cveId.trim().toUpperCase();
+    const cleanId = (cveId || '').trim().toUpperCase();
+
+    if (!cleanId || !/^CVE-\d{4}-\d{4,8}$/i.test(cleanId)) {
+        return res.status(400).json({
+            status: 'error',
+            cveId: cleanId,
+            message: 'Invalid CVE format. Expected CVE-YYYY-NNNN format.'
+        });
+    }
 
     try {
         const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=${encodeURIComponent(cleanId)}`;

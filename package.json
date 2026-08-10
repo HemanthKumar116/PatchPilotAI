@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:vite\"",
+    "dev": "concurrently -n backend,server,vite -c blue,yellow,green \"npm run dev:backend\" \"npm run dev:server\" \"npm run dev:vite\"",
+    "dev:backend": "python backend/app.py",
     "dev:vite": "vite",
     "dev:server": "node server/index.js",
     "zip": "python scripts/auto_zip.py",

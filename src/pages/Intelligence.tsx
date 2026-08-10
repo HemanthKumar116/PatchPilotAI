@@ -48,11 +48,11 @@ export const Intelligence: React.FC = () => {
             {/* Page Title */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <Radio className="w-6 h-6 text-blue-600" />
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2 drop-shadow-md font-display">
+                        <Radio className="w-7 h-7 text-white" />
                         Threat Intelligence Feeds & Engine Status
                     </h1>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <p className="text-xs text-zinc-200 font-medium font-mono mt-1">
                         Live connection metrics for NIST NVD, CISA KEV catalog, and Python Random Forest Microservice.
                     </p>
                 </div>

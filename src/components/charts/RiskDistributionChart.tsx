@@ -6,46 +6,59 @@ export const RiskDistributionChart: React.FC = () => {
     const { vulnerabilities } = useVulnerability();
 
     const bins = [
-        { range: '0-20 (Low)', count: 0, color: '#16A34A' },
-        { range: '21-40 (Low)', count: 0, color: '#22C55E' },
-        { range: '41-60 (Med)', count: 0, color: '#D97706' },
-        { range: '61-80 (High)', count: 0, color: '#EA580C' },
-        { range: '81-100 (Crit)', count: 0, color: '#DC2626' },
+        { name: '0–25', count: 0, color: '#D4D4D8' },
+        { name: '26–50', count: 0, color: '#A1A1AA' },
+        { name: '51–75', count: 0, color: '#52525B' },
+        { name: '76–90', count: 0, color: '#27272A' },
+        { name: '91–100', count: 0, color: '#000000' },
     ];
 
     vulnerabilities.forEach((v) => {
         const s = v.analysis.riskScore;
-        if (s <= 20) bins[0].count++;
-        else if (s <= 40) bins[1].count++;
-        else if (s <= 60) bins[2].count++;
-        else if (s <= 80) bins[3].count++;
+        if (s <= 25) bins[0].count++;
+        else if (s <= 50) bins[1].count++;
+        else if (s <= 75) bins[2].count++;
+        else if (s <= 90) bins[3].count++;
         else bins[4].count++;
     });
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+        <div className="card-maximalist p-6 flex flex-col justify-between">
             <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1">
-                    Risk Score Distribution
+                <h3 className="text-base font-extrabold font-display text-black tracking-tight mb-1">
+                    Risk Score Frequency Bands
                 </h3>
-                <p className="text-xs text-slate-500 mb-4">
-                    Frequency of risk scores across 0-100 bands.
+                <p className="text-xs font-mono text-zinc-500 mb-4">
+                    Histogram of calculated AI risk scores across fleet assets.
                 </p>
             </div>
 
-            <div className="h-56 w-full">
+            <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={bins} margin={{ top: 10, right: 10, bottom: 20, left: -20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                        <XAxis dataKey="range" stroke="#64748B" fontSize={10} interval={0} />
-                        <YAxis stroke="#64748B" fontSize={11} allowDecimals={false} />
-                        <Tooltip
-                            contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '0.5rem', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                            itemStyle={{ color: '#2563EB' }}
+                    <BarChart data={bins} margin={{ top: 10, right: 10, bottom: 5, left: -20 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E4E4E7" vertical={false} />
+                        <XAxis
+                            dataKey="name"
+                            stroke="#000000"
+                            tick={{ fill: '#000000', fontSize: 11, fontFamily: 'monospace' }}
                         />
-                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                        <YAxis
+                            stroke="#000000"
+                            tick={{ fill: '#000000', fontSize: 11, fontFamily: 'monospace' }}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: '#000000',
+                                border: '2px solid #000000',
+                                borderRadius: '12px',
+                                color: '#FFFFFF',
+                                fontFamily: 'monospace',
+                                fontSize: '12px',
+                            }}
+                        />
+                        <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                             {bins.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                <Cell key={`cell-${index}`} fill={entry.color} stroke="#000000" strokeWidth={1.5} />
                             ))}
                         </Bar>
                     </BarChart>
@@ -54,3 +67,5 @@ export const RiskDistributionChart: React.FC = () => {
         </div>
     );
 };
+
+export default RiskDistributionChart;

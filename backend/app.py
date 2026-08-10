@@ -611,75 +611,78 @@ async def import_datasets(
 @app.get("/stats")
 def get_vulnerabilities_summary():
     conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM vulnerabilities")
-    total_count = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM vulnerabilities")
+        total_count = cursor.fetchone()[0]
 
-    cursor.execute("SELECT ml_priority, COUNT(*) FROM vulnerabilities GROUP BY ml_priority")
-    priority_rows = cursor.fetchall()
-    priority_counts = { 'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0 }
-    for p, c in priority_rows:
-        if p and p.upper() in priority_counts:
-            priority_counts[p.upper()] = c
+        cursor.execute("SELECT ml_priority, COUNT(*) FROM vulnerabilities GROUP BY ml_priority")
+        priority_rows = cursor.fetchall()
+        priority_counts = { 'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0 }
+        for p, c in priority_rows:
+            if p and p.upper() in priority_counts:
+                priority_counts[p.upper()] = c
 
-    cursor.execute("SELECT severity, COUNT(*) FROM vulnerabilities GROUP BY severity")
-    severity_rows = cursor.fetchall()
-    severity_counts = { 'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0 }
-    for s, c in severity_rows:
-        if s and s.upper() in severity_counts:
-            severity_counts[s.upper()] = c
+        cursor.execute("SELECT severity, COUNT(*) FROM vulnerabilities GROUP BY severity")
+        severity_rows = cursor.fetchall()
+        severity_counts = { 'CRITICAL': 0, 'HIGH': 0, 'MEDIUM': 0, 'LOW': 0 }
+        for s, c in severity_rows:
+            if s and s.upper() in severity_counts:
+                severity_counts[s.upper()] = c
 
-    cursor.execute("SELECT AVG(cvss) FROM vulnerabilities")
-    avg_cvss_res = cursor.fetchone()[0]
-    avg_cvss = float(avg_cvss_res) if avg_cvss_res is not None else 7.2
+        cursor.execute("SELECT AVG(cvss) FROM vulnerabilities")
+        avg_cvss_res = cursor.fetchone()[0]
+        avg_cvss = float(avg_cvss_res) if avg_cvss_res is not None else 7.2
 
-    # Query top critical & prioritized records for active fleet display
-    cursor.execute("""
-        SELECT * FROM vulnerabilities 
-        ORDER BY 
-            (CASE 
-                WHEN UPPER(ml_priority) = 'CRITICAL' THEN 4 
-                WHEN UPPER(ml_priority) = 'HIGH' THEN 3 
-                WHEN UPPER(ml_priority) = 'MEDIUM' THEN 2 
-                ELSE 1 
-            END) DESC,
-            cvss DESC,
-            pub_date DESC,
-            cve_id DESC 
-        LIMIT 400
-    """)
-    top_rows = cursor.fetchall()
-    items = []
-    for r in top_rows:
-        d = dict(r)
-        if d.get('probabilities'):
-            try:
-                d['probabilities'] = json.loads(d['probabilities'])
-            except Exception:
-                pass
-        items.append(d)
+        # Query top critical & prioritized records for active fleet display
+        cursor.execute("""
+            SELECT * FROM vulnerabilities 
+            ORDER BY 
+                (CASE 
+                    WHEN UPPER(ml_priority) = 'CRITICAL' THEN 4 
+                    WHEN UPPER(ml_priority) = 'HIGH' THEN 3 
+                    WHEN UPPER(ml_priority) = 'MEDIUM' THEN 2 
+                    ELSE 1 
+                END) DESC,
+                cvss DESC,
+                pub_date DESC,
+                cve_id DESC 
+            LIMIT 400
+        """)
+        top_rows = cursor.fetchall()
+        items = []
+        for r in top_rows:
+            d = dict(r)
+            if d.get('probabilities'):
+                try:
+                    d['probabilities'] = json.loads(d['probabilities'])
+                except Exception:
+                    pass
+            items.append(d)
 
-    conn.close()
-
-    return {
-        "status": "ok",
-        "total_count": total_count,
-        "priority_counts": priority_counts,
-        "severity_counts": severity_counts,
-        "avg_cvss": round(avg_cvss, 2),
-        "items": items
-    }
+        return {
+            "status": "ok",
+            "total_count": total_count,
+            "priority_counts": priority_counts,
+            "severity_counts": severity_counts,
+            "avg_cvss": round(avg_cvss, 2),
+            "items": items
+        }
+    finally:
+        conn.close()
 
 @app.get("/api/vulnerabilities/{cve_id}")
 @app.get("/vulnerabilities/{cve_id}")
 def get_vulnerability_by_cve(cve_id: str):
     clean_cve = cve_id.strip().upper()
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM vulnerabilities WHERE UPPER(cve_id) = ?", (clean_cve,))
-    row = cursor.fetchone()
-    conn.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM vulnerabilities WHERE UPPER(cve_id) = ?", (clean_cve,))
+        row = cursor.fetchone()
+    finally:
+        conn.close()
 
     if not row:
         raise HTTPException(status_code=404, detail=f"Vulnerability {clean_cve} not found in database.")
@@ -734,59 +737,60 @@ def query_vulnerabilities(
     priority: Optional[str] = Query(None)
 ):
     conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    where_clauses = []
-    params = []
+        where_clauses = []
+        params = []
 
-    if search and search.strip():
-        q = f"%{search.strip().lower()}%"
-        where_clauses.append("(LOWER(cve_id) LIKE ? OR LOWER(vendor) LIKE ? OR LOWER(vulnerable_product) LIKE ? OR LOWER(cwe_code) LIKE ? OR LOWER(summary) LIKE ?)")
-        params.extend([q, q, q, q, q])
+        if search and search.strip():
+            q = f"%{search.strip().lower()}%"
+            where_clauses.append("(LOWER(cve_id) LIKE ? OR LOWER(vendor) LIKE ? OR LOWER(vulnerable_product) LIKE ? OR LOWER(cwe_code) LIKE ? OR LOWER(summary) LIKE ?)")
+            params.extend([q, q, q, q, q])
 
-    if severity and severity.strip() and severity.upper() != 'ALL':
-        where_clauses.append("UPPER(severity) = ?")
-        params.append(severity.strip().upper())
+        if severity and severity.strip() and severity.upper() != 'ALL':
+            where_clauses.append("UPPER(severity) = ?")
+            params.append(severity.strip().upper())
 
-    if priority and priority.strip() and priority.upper() != 'ALL':
-        where_clauses.append("UPPER(ml_priority) = ?")
-        params.append(priority.strip().upper())
+        if priority and priority.strip() and priority.upper() != 'ALL':
+            where_clauses.append("UPPER(ml_priority) = ?")
+            params.append(priority.strip().upper())
 
-    where_stmt = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+        where_stmt = " WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
-    # Count total
-    cursor.execute(f"SELECT COUNT(*) FROM vulnerabilities{where_stmt}", params)
-    total_count = cursor.fetchone()[0]
-    total_pages = max(1, (total_count + limit - 1) // limit)
+        # Count total
+        cursor.execute(f"SELECT COUNT(*) FROM vulnerabilities{where_stmt}", params)
+        total_count = cursor.fetchone()[0]
+        total_pages = max(1, (total_count + limit - 1) // limit)
 
-    offset = (page - 1) * limit
-    cursor.execute(f"SELECT * FROM vulnerabilities{where_stmt} ORDER BY cvss DESC, cve_id ASC LIMIT ? OFFSET ?", params + [limit, offset])
-    raw_rows = cursor.fetchall()
-    
-    rows = []
-    for r in raw_rows:
-        d = dict(r)
-        if d.get('probabilities'):
-            try:
-                d['probabilities'] = json.loads(d['probabilities'])
-            except Exception:
-                pass
-        # Aliases for dataset explorer
-        d['primary_vendor'] = d.get('vendor')
-        d['primary_product'] = d.get('vulnerable_product')
-        d['patch_priority'] = d.get('ml_priority') or d.get('severity')
-        rows.append(d)
+        offset = (page - 1) * limit
+        cursor.execute(f"SELECT * FROM vulnerabilities{where_stmt} ORDER BY cvss DESC, cve_id ASC LIMIT ? OFFSET ?", params + [limit, offset])
+        raw_rows = cursor.fetchall()
+        
+        rows = []
+        for r in raw_rows:
+            d = dict(r)
+            if d.get('probabilities'):
+                try:
+                    d['probabilities'] = json.loads(d['probabilities'])
+                except Exception:
+                    pass
+            # Aliases for dataset explorer
+            d['primary_vendor'] = d.get('vendor')
+            d['primary_product'] = d.get('vulnerable_product')
+            d['patch_priority'] = d.get('ml_priority') or d.get('severity')
+            rows.append(d)
 
-    conn.close()
-
-    return {
-        "status": "ok",
-        "page": page,
-        "limit": limit,
-        "total_count": total_count,
-        "total_pages": total_pages,
-        "items": rows
-    }
+        return {
+            "status": "ok",
+            "page": page,
+            "limit": limit,
+            "total_count": total_count,
+            "total_pages": total_pages,
+            "items": rows
+        }
+    finally:
+        conn.close()
 
 @app.get("/api/ml/metrics")
 @app.get("/metrics")

@@ -136,18 +136,18 @@ export const AiModel: React.FC = () => {
     return (
         <div className="space-y-6 animate-page-enter font-sans">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/20 pb-5">
                 <div>
                     <div className="flex items-center gap-2.5 mb-1">
-                        <Brain className="w-6 h-6 text-blue-600" />
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+                        <Brain className="w-7 h-7 text-white" />
+                        <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-md font-display">
                             Random Forest Machine Learning Engine
                         </h1>
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            🟢 MODEL TRAINED & ACTIVE
+                        <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-white text-black border-2 border-white">
+                            MODEL TRAINED
                         </span>
                     </div>
-                    <p className="text-slate-600 text-xs font-normal">
+                    <p className="text-zinc-200 text-xs font-mono mt-1">
                         Random Forest Classifier (200 Decision Trees) trained on 89,660 CVE records to predict patch prioritization telemetry.
                     </p>
                 </div>

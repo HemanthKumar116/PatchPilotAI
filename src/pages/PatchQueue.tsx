@@ -129,11 +129,11 @@ export const PatchQueue: React.FC = () => {
         <div className="space-y-6 animate-page-enter font-sans">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <ListOrdered className="w-6 h-6 text-blue-600" />
+                <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-2 drop-shadow-md font-display">
+                    <ListOrdered className="w-7 h-7 text-white" />
                     Patch Queue & Remediation Roadmap
                 </h1>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-zinc-200 font-medium font-mono mt-1">
                     Prioritized patching schedule organized by urgency band. Fix critical exposures within 24 hours.
                 </p>
             </div>

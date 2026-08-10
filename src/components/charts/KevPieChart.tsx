@@ -3,50 +3,64 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 import { useVulnerability } from '../../context/VulnerabilityContext';
 
 export const KevPieChart: React.FC = () => {
-    const { vulnerabilities } = useVulnerability();
+    const { fleetStats, vulnerabilities } = useVulnerability();
 
-    const kevCount = vulnerabilities.filter((v) => v.knownExploited).length;
-    const nonKevCount = vulnerabilities.length - kevCount;
+    const knownExploitedCount = fleetStats.knownExploitedCount || vulnerabilities.filter((v) => v.knownExploited).length;
+    const total = fleetStats.totalCount || vulnerabilities.length;
+    const notExploited = Math.max(0, total - knownExploitedCount);
 
     const data = [
-        { name: '🔥 Known Exploited (CISA KEV)', value: kevCount, color: '#DC2626' },
-        { name: '✓ Not Listed in KEV', value: nonKevCount, color: '#2563EB' },
+        { name: 'CISA KEV Weaponized', value: knownExploitedCount, color: '#000000' },
+        { name: 'Theoretical Risk Only', value: notExploited, color: '#D4D4D8' },
     ];
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+        <div className="card-maximalist p-6 flex flex-col justify-between">
             <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight mb-1">
-                    CISA KEV Exploitation Breakdown
+                <h3 className="text-base font-extrabold font-display text-black tracking-tight mb-1">
+                    CISA KEV Exploitation Ratio
                 </h3>
-                <p className="text-xs text-slate-500 mb-4">
-                    Ratio of vulnerabilities known to be actively exploited in the wild.
+                <p className="text-xs font-mono text-zinc-500 mb-4">
+                    Proportion of fleet vulnerabilities weaponized by active threat actors.
                 </p>
             </div>
 
-            <div className="h-56 w-full">
+            <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: '#000000',
+                                border: '2px solid #000000',
+                                borderRadius: '12px',
+                                color: '#FFFFFF',
+                                fontFamily: 'monospace',
+                                fontSize: '12px',
+                            }}
+                        />
+                        <Legend
+                            verticalAlign="bottom"
+                            height={36}
+                            formatter={(value) => <span className="text-xs font-mono text-black font-bold">{value}</span>}
+                        />
                         <Pie
                             data={data}
                             cx="50%"
                             cy="50%"
                             innerRadius={50}
-                            outerRadius={75}
+                            outerRadius={80}
                             paddingAngle={4}
                             dataKey="value"
                         >
                             {data.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} stroke="#FFFFFF" strokeWidth={2} />
+                                <Cell key={`cell-${index}`} fill={entry.color} stroke="#000000" strokeWidth={2} />
                             ))}
                         </Pie>
-                        <Tooltip
-                            contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E2E8F0', borderRadius: '0.5rem', fontSize: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        />
-                        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#64748B' }} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
         </div>
     );
 };
+
+export default KevPieChart;
